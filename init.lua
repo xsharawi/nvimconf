@@ -202,17 +202,6 @@ require('lazy').setup({
 
   { 'farmergreg/vim-lastplace' },
 
-  -- {
-  --   'pmizio/typescript-tools.nvim',
-  --   dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-  --   opts = {
-  --     on_attach = function()
-  --       print 'attached'
-  --     end,
-  --   },
-  -- },
-  --
-
   {
     'Hoffs/omnisharp-extended-lsp.nvim',
   },
@@ -268,14 +257,13 @@ require('lazy').setup({
       end
     end,
   },
+
   {
     'alexghergh/nvim-tmux-navigation',
     config = function()
       local nvim_tmux_nav = require 'nvim-tmux-navigation'
 
-      nvim_tmux_nav.setup {
-        disable_when_zoomed = false, -- defaults to false
-      }
+      nvim_tmux_nav.setup {}
 
       vim.keymap.set('n', '<C-h>', nvim_tmux_nav.NvimTmuxNavigateLeft)
       vim.keymap.set('n', '<C-j>', nvim_tmux_nav.NvimTmuxNavigateDown)
@@ -662,7 +650,20 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
         tsserver = {},
-        --
+        solargraph = {
+          root_dir = require('lspconfig').util.root_pattern('Gemfile', '.git', '.'),
+          settings = {
+            solargraph = {
+              autoformat = true,
+              completion = true,
+              diagnostic = true,
+              folding = true,
+              references = true,
+              rename = true,
+              symbols = true,
+            },
+          },
+        },
 
         lua_ls = {
           --cmd = { ... },
@@ -1056,6 +1057,7 @@ map('n', '<leader>e', '<cmd>Ex<CR>', 'toggle tree')
 map('n', '<C-n>', '<cmd>cnext<CR>zz', 'cnext')
 map('n', '<C-p>', '<cmd>cprev<CR>zz', 'cprev')
 map('n', '0', '_', nil)
+map({ 'n', 'x' }, '<Tab>', '%', nil)
 
 vim.g['neovide_cursor_vfx_mode'] = 'railgun'
 
@@ -1079,28 +1081,28 @@ if #vim.fn.argv() > 0 then
   end
 end
 
-local nvim_lsp = require 'lspconfig'
-nvim_lsp.nixd.setup {
-  cmd = { 'nixd' },
-  settings = {
-    nixd = {
-      nixpkgs = {
-        expr = 'import <nixpkgs> { }',
-      },
-      formatting = {
-        command = { 'nixpkgs-fmt' },
-      },
-      options = {
-        nixos = {
-          expr = '(builtins.getFlake ("git+file://" + toString ./.)).nixosConfigurations.k-on.options',
-        },
-        home_manager = {
-          expr = '(builtins.getFlake ("git+file://" + toString ./.)).homeConfigurations."ruixi@k-on".options',
-        },
-      },
-    },
-  },
-}
+-- local nvim_lsp = require 'lspconfig'
+-- nvim_lsp.nixd.setup {
+--   cmd = { 'nixd' },
+--   settings = {
+--     nixd = {
+--       nixpkgs = {
+--         expr = 'import <nixpkgs> { }',
+--       },
+--       formatting = {
+--         command = { 'nixpkgs-fmt' },
+--       },
+--       options = {
+--         nixos = {
+--           expr = '(builtins.getFlake ("git+file://" + toString ./.)).nixosConfigurations.k-on.options',
+--         },
+--         home_manager = {
+--           expr = '(builtins.getFlake ("git+file://" + toString ./.)).homeConfigurations."ruixi@k-on".options',
+--         },
+--       },
+--     },
+--   },
+-- }
 
 local cmp_nvim_lsp = require 'cmp_nvim_lsp'
 
@@ -1111,3 +1113,19 @@ require('lspconfig').clangd.setup {
     '--offset-encoding=utf-16',
   },
 }
+
+-- Define a function to run the current Go file
+local function run_go_file()
+  vim.cmd 'write' -- Save the current file
+  vim.cmd('split | terminal go run ' .. vim.fn.expand '%') -- Run Go file in a split terminal
+end
+
+-- Create an autocommand group for Go file mappings
+vim.api.nvim_create_augroup('GoFileMappings', { clear = true })
+vim.api.nvim_create_autocmd('FileType', {
+  group = 'GoFileMappings',
+  pattern = 'go',
+  callback = function()
+    vim.keymap.set('n', '<leader>rr', run_go_file, { buffer = true })
+  end,
+})
