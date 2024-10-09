@@ -275,6 +275,7 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
+
   {
     'laytan/tailwind-sorter.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-lua/plenary.nvim' },
@@ -650,6 +651,7 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
         tsserver = {},
+        tailwindcss = {},
         solargraph = {
           root_dir = require('lspconfig').util.root_pattern('Gemfile', '.git', '.'),
           settings = {
