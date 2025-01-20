@@ -202,9 +202,6 @@ require('lazy').setup({
 
   { 'farmergreg/vim-lastplace' },
 
-  {
-    'Hoffs/omnisharp-extended-lsp.nvim',
-  },
   { 'axelvc/template-string.nvim', opts = {} },
   {
     'ThePrimeagen/harpoon',
@@ -213,11 +210,19 @@ require('lazy').setup({
       'nvim-lua/plenary.nvim',
     },
     config = function()
+      -- Extensions.extensions:add_listener({
+      --   ADD = sync("ADD"),
+      --   REMOVE = sync("REMOVE"),
+      --   REORDER = sync("REORDER"),
+      --   LIST_CHANGE = sync("LIST_CHANGE"),
+      --   POSITION_UPDATED = sync("POSITION_UPDATED"),
+      -- })
+
       local harpoon = require 'harpoon'
       harpoon:setup {}
 
       vim.keymap.set('n', '<leader>ha', function()
-        harpoon:list():append()
+        harpoon:list():add()
       end)
       vim.keymap.set('n', '<leader>hh', function()
         harpoon.ui:toggle_quick_menu(harpoon:list())
@@ -275,19 +280,6 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
-
-  {
-    'laytan/tailwind-sorter.nvim',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-lua/plenary.nvim' },
-    build = 'cd formatter && npm ci && npm run build',
-    config = true,
-    opts = {
-      tailwindConfig = 'tailwind.config.js',
-      filetypes = { 'html', 'css', 'scss', 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
-      on_save_enabled = true,
-      node_path = 'node',
-    },
-  },
 
   'nanotee/zoxide.vim',
 
@@ -351,13 +343,6 @@ require('lazy').setup({
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').register {
-        ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
-        ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
-        ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-        ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-        ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-      }
     end,
   },
 
@@ -433,6 +418,7 @@ require('lazy').setup({
         -- },
         -- pickers = {}
         extensions = {
+          fzf = {},
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
@@ -650,21 +636,9 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        tsserver = {},
-        tailwindcss = {},
-        solargraph = {
-          root_dir = require('lspconfig').util.root_pattern('Gemfile', '.git', '.'),
-          settings = {
-            solargraph = {
-              autoformat = true,
-              completion = true,
-              diagnostic = true,
-              folding = true,
-              references = true,
-              rename = true,
-              symbols = true,
-            },
-          },
+
+        zls = {
+          cmd = { '/run/current-system/sw/bin/zls' },
         },
 
         lua_ls = {
@@ -732,6 +706,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        zig = { 'zig fmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -881,8 +856,34 @@ require('lazy').setup({
     opts = {
       style = 'cool',
     },
+    -- config = function()
+    --   require('onedark').load()
+    -- end,
+  },
+
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
     config = function()
-      require('onedark').load()
+      require('catppuccin').setup {
+        flavour = 'mocha', -- latte, frappe, macchiato, mocha
+        transparent_background = false,
+        default_integrations = true,
+        integrations = {
+          cmp = true,
+          gitsigns = true,
+          nvimtree = true,
+          treesitter = true,
+          notify = false,
+          mini = {
+            enabled = true,
+            indentscope_color = '',
+          },
+          -- For more plugins integrations please scroll down (https://github.com/catppuccin/nvim#integrations)
+        },
+      }
+      vim.cmd.colorscheme 'catppuccin'
     end,
   },
 
@@ -992,6 +993,8 @@ require('lazy').setup({
     'kristijanhusak/vim-dadbod-completion',
     'kristijanhusak/vim-dadbod-ui',
   },
+
+  'ThePrimeagen/vim-be-good',
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
@@ -1023,6 +1026,7 @@ local function map(m, k, v, d)
   d = d or 'set one haha'
   vim.keymap.set(m, k, v, { silent = true, desc = d })
 end
+
 map('n', '<leader>o', 'o<ESC>', 'Line below')
 map('n', '<leader>O', 'O<ESC>', 'Line above')
 map('n', '<leader>qe', ':e ~/.config/nvim/init.lua<CR>', 'Edit init')
@@ -1083,28 +1087,27 @@ if #vim.fn.argv() > 0 then
   end
 end
 
--- local nvim_lsp = require 'lspconfig'
--- nvim_lsp.nixd.setup {
---   cmd = { 'nixd' },
---   settings = {
---     nixd = {
---       nixpkgs = {
---         expr = 'import <nixpkgs> { }',
---       },
---       formatting = {
---         command = { 'nixpkgs-fmt' },
---       },
---       options = {
---         nixos = {
---           expr = '(builtins.getFlake ("git+file://" + toString ./.)).nixosConfigurations.k-on.options',
---         },
---         home_manager = {
---           expr = '(builtins.getFlake ("git+file://" + toString ./.)).homeConfigurations."ruixi@k-on".options',
---         },
---       },
---     },
---   },
--- }
+require('lspconfig').nixd.setup {
+  cmd = { 'nixd' },
+  settings = {
+    nixd = {
+      nixpkgs = {
+        expr = 'import <nixpkgs> { }',
+      },
+      formatting = {
+        command = { 'nixfmt' },
+      },
+      options = {
+        nixos = {
+          expr = '(builtins.getFlake "/etc/nixos").nixosConfigurations.vim.options',
+        },
+        home_manager = {
+          expr = '(builtins.getFlake "/etc/nixos").homeConfigurations."xsharawi".options',
+        },
+      },
+    },
+  },
+}
 
 local cmp_nvim_lsp = require 'cmp_nvim_lsp'
 
@@ -1113,6 +1116,13 @@ require('lspconfig').clangd.setup {
   cmd = {
     'clangd',
     '--offset-encoding=utf-16',
+  },
+}
+
+require('lspconfig').gopls.setup {
+  capabilities = cmp_nvim_lsp.default_capabilities(),
+  cmd = {
+    'gopls',
   },
 }
 
