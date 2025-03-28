@@ -1130,6 +1130,7 @@ require('lspconfig').gopls.setup {
 local function run_go_file()
   vim.cmd 'write' -- Save the current file
   vim.cmd('split | terminal go run ' .. vim.fn.expand '%') -- Run Go file in a split terminal
+  vim.cmd 'startinsert'
 end
 
 -- Create an autocommand group for Go file mappings
