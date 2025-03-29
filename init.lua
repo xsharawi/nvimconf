@@ -253,8 +253,6 @@ require('lazy').setup({
 
         if is_directory or is_file then
           if is_file then
-            -- Extract the directory path from the file path
-            local file_directory = vim.fn.fnamemodify(path, ':h')
           else
             harpoon:list():select(1)
           end
@@ -1115,7 +1113,13 @@ require('lspconfig').clangd.setup {
   capabilities = cmp_nvim_lsp.default_capabilities(),
   cmd = {
     'clangd',
+    '--background-index',
+    '--clang-tidy',
+    '--log=verbose',
     '--offset-encoding=utf-16',
+  },
+  init_options = {
+    fallbackFlags = { '--std=c++11' },
   },
 }
 
